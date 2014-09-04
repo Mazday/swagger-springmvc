@@ -79,42 +79,50 @@ public class ModelDependencyProvider {
     return parameters;
   }
 
+  private List<? extends ResolvedType> resolvedTypeParameters(ModelContext modelContext, ResolvedType resolvedType) {
+      List<ResolvedType> parameters = newArrayList();
+      for (ResolvedType parameter : resolvedType.getTypeParameters()) {
+          parameters.add(alternateTypeProvider.alternateFor(parameter));
+          parameters.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, parameter)));
+      }
+      return parameters;
+  }
+
   private List<ResolvedType> resolvedPropertiesAndFields(ModelContext modelContext, ResolvedType resolvedType) {
-    if (modelContext.hasSeenBefore(resolvedType)) {
-      return newArrayList();
-    }
-    modelContext.seen(resolvedType);
-    List<ResolvedType> properties = newArrayList();
-    for (ModelProperty property : propertiesFor(modelContext, resolvedType)) {
-      if (Types.typeNameFor(property.getType().getErasedType()) != null) {
-        continue;
+      if (modelContext.hasSeenBefore(resolvedType)) {
+          return newArrayList();
       }
-      if (Types.isBaseType(typeName(property.getType()))) {
-        continue;
-      }
-      properties.add(property.getType());
-      if (Collections.isContainerType(property.getType())) {
-        ResolvedType collectionElementType = Collections.collectionElementType(property.getType());
-        if (Types.typeNameFor(collectionElementType.getErasedType()) == null) {
-          if (!Types.isBaseType(typeName(collectionElementType))) {
-            properties.add(collectionElementType);
+      modelContext.seen(resolvedType);
+      List<ResolvedType> properties = newArrayList();
+      for (ModelProperty property : propertiesFor(modelContext, resolvedType)) {
+          if (Types.typeNameFor(property.getType().getErasedType()) != null) {
+              continue;
           }
-          properties.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, collectionElementType)));
-        }
-        continue;
+          if (Types.isBaseType(typeName(property.getType()))) {
+              continue;
+          }
+          properties.add(property.getType());
+          if (Collections.isContainerType(property.getType())) {
+              ResolvedType collectionElementType = Collections.collectionElementType(property.getType());
+              if (Types.typeNameFor(collectionElementType.getErasedType()) == null) {
+                  if (!Types.isBaseType(typeName(collectionElementType))) {
+                      properties.add(collectionElementType);
+                  }
+                  properties.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, collectionElementType)));
+              }
+              continue;
+          }
+          properties.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, property.getType())));
       }
-      properties.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, property.getType())));
-    }
-    return properties;
+      return properties;
   }
 
   private Iterable<? extends ModelProperty> propertiesFor(ModelContext modelContext, ResolvedType resolvedType) {
-    if (modelContext.isReturnType()) {
-      return propertiesProvider.propertiesForSerialization(resolvedType);
-    } else {
-      return propertiesProvider.propertiesForDeserialization(resolvedType);
-    }
+      if (modelContext.isReturnType()) {
+          return propertiesProvider.propertiesForSerialization(resolvedType, modelContext.getViews());
+      } else {
+          return propertiesProvider.propertiesForDeserialization(resolvedType, modelContext.getViews());
+      }
   }
-
 
 }

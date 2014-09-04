@@ -2,6 +2,7 @@ package com.mangofactory.swagger.readers;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.mangofactory.swagger.configuration.SwaggerGlobalSettings;
@@ -61,7 +62,9 @@ public class ApiModelReader implements Command<RequestMappingContext> {
       modelType = asResolved(swaggerGlobalSettings.getTypeResolver(), apiOperationAnnotation.response());
     }
     if (!swaggerGlobalSettings.getIgnorableParameterTypes().contains(modelType.getErasedType())) {
+      JsonView views = handlerMethod.getMethodAnnotation(JsonView.class);
       ModelContext modelContext = ModelContext.returnValue(modelType);
+      modelContext.setViews(views);
       markIgnorablesAsHasSeen(swaggerGlobalSettings.getTypeResolver(),
               swaggerGlobalSettings.getIgnorableParameterTypes(),
               modelContext);
@@ -104,8 +107,6 @@ public class ApiModelReader implements Command<RequestMappingContext> {
         Map<String, ModelProperty> mergedTargetProperties = Maps.newHashMap(targetProperties);
         for (String newProperty : newSourcePropKeys) {
           mergedTargetProperties.put(newProperty, sourceProperties.get(newProperty));
-        }
-
         // uses scala generated copy constructor.
         Model mergedModel = targetModelValue.copy(
                 targetModelValue.id(),

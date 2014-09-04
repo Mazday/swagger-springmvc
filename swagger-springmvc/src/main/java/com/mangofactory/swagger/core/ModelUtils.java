@@ -2,6 +2,7 @@ package com.mangofactory.swagger.core;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mangofactory.swagger.models.ResolvedTypes;
 import com.mangofactory.swagger.readers.operation.HandlerMethodResolver;
 import org.springframework.web.method.HandlerMethod;
@@ -29,5 +30,17 @@ public final class ModelUtils {
 
   public static String getResponseClassName(ResolvedType returnType) {
     return ResolvedTypes.responseTypeName(returnType);
+  }
+
+  public static String getResponseClassName(ResolvedType returnType, JsonView views) {
+     StringBuilder sb = new StringBuilder(ResolvedTypes.responseTypeName(returnType));
+     if (null != views) {
+        String delim = "";
+        for (Class<?> cl: views.value()) {
+           sb.append(delim).append(cl.getSimpleName());
+           delim = "And";
+        }
+     }
+     return sb.toString();
   }
 }

@@ -2,6 +2,7 @@ package com.mangofactory.swagger.models;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import java.lang.reflect.Type;
 import java.util.Set;
@@ -14,6 +15,7 @@ public class ModelContext {
   private final Type type;
   private final boolean returnType;
   private Set<ResolvedType> seenTypes = newHashSet();
+  private JsonView views;
 
   ModelContext(Type type, boolean returnType) {
     this.parentContext = null;
@@ -56,6 +58,14 @@ public class ModelContext {
             || seenTypes.contains(asResolved(new TypeResolver(), resolvedType.getErasedType())) // DK TODO : fix
             // alternate types
             || parentHasSeenBefore(resolvedType);
+  }
+
+  public JsonView getViews() {
+    return views;
+  }
+
+  public void setViews(JsonView views) {
+    this.views = views;
   }
 
   private boolean parentHasSeenBefore(ResolvedType resolvedType) {
