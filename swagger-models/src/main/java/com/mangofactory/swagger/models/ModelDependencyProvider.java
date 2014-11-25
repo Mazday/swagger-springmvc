@@ -79,15 +79,6 @@ public class ModelDependencyProvider {
     return parameters;
   }
 
-  private List<? extends ResolvedType> resolvedTypeParameters(ModelContext modelContext, ResolvedType resolvedType) {
-      List<ResolvedType> parameters = newArrayList();
-      for (ResolvedType parameter : resolvedType.getTypeParameters()) {
-          parameters.add(alternateTypeProvider.alternateFor(parameter));
-          parameters.addAll(resolvedDependencies(ModelContext.fromParent(modelContext, parameter)));
-      }
-      return parameters;
-  }
-
   private List<ResolvedType> resolvedPropertiesAndFields(ModelContext modelContext, ResolvedType resolvedType) {
       if (modelContext.hasSeenBefore(resolvedType)) {
           return newArrayList();

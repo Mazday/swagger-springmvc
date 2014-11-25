@@ -3,6 +3,7 @@ package com.mangofactory.swagger.models.property.bean;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.classmate.members.ResolvedMethod;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +16,7 @@ import com.mangofactory.swagger.models.BeanPropertyNamingStrategy;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
 import com.mangofactory.swagger.models.property.BeanPropertyDefinitions;
 import com.mangofactory.swagger.models.property.ModelProperty;
-import com.mangofactory.swagger.models.property.provider.ModelPropertiesProvider;
+import com.mangofactory.swagger.models.property.provider.AbstractModelPropertiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ import static com.mangofactory.swagger.models.property.bean.Accessors.*;
 import static com.mangofactory.swagger.models.property.bean.BeanModelProperty.*;
 
 @Component
-public class BeanModelPropertyProvider implements ModelPropertiesProvider {
+public class BeanModelPropertyProvider extends AbstractModelPropertiesProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(BeanModelPropertyProvider.class);
   private final AccessorsProvider accessors;
@@ -52,9 +53,9 @@ public class BeanModelPropertyProvider implements ModelPropertiesProvider {
 
 
   @Override
-  public Iterable<? extends ModelProperty> propertiesForSerialization(ResolvedType resolvedType) {
+  public Iterable<? extends ModelProperty> propertiesForSerialization(ResolvedType resolvedType, JsonView views) {
     List<ModelProperty> serializationCandidates = newArrayList();
-    SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+    SerializationConfig serializationConfig = getSerializationConfigWithViews(views);
     BeanDescription beanDescription = serializationConfig.introspect(TypeFactory.defaultInstance()
             .constructType(resolvedType.getErasedType()));
     Map<String, BeanPropertyDefinition> propertyLookup = uniqueIndex(beanDescription.findProperties(),
@@ -62,6 +63,10 @@ public class BeanModelPropertyProvider implements ModelPropertiesProvider {
     for (ResolvedMethod childProperty : accessors.in(resolvedType)) {
       if (propertyLookup.containsKey(propertyName(childProperty.getName()))) {
         BeanPropertyDefinition propertyDefinition = propertyLookup.get(propertyName(childProperty.getName()));
+        Class<?>[] foundViews = propertyDefinition.findViews();
+        if (null != views && null != foundViews && !isAssignableFromViews(foundViews, views.value())) {
+          continue;
+        }
         Optional<BeanPropertyDefinition> jacksonProperty
                 = jacksonPropertyWithSameInternalName(beanDescription, propertyDefinition);
         AnnotatedMember member = propertyDefinition.getPrimaryMember();
@@ -74,9 +79,9 @@ public class BeanModelPropertyProvider implements ModelPropertiesProvider {
   }
 
   @Override
-  public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType resolvedType) {
+  public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType resolvedType, JsonView views) {
     List<ModelProperty> serializationCandidates = newArrayList();
-    DeserializationConfig serializationConfig = objectMapper.getDeserializationConfig();
+    DeserializationConfig serializationConfig = getDeserializationConfigWithViews(views);
     BeanDescription beanDescription = serializationConfig.introspect(TypeFactory.defaultInstance()
             .constructType(resolvedType.getErasedType()));
     Map<String, BeanPropertyDefinition> propertyLookup = uniqueIndex(beanDescription.findProperties(),
@@ -85,6 +90,10 @@ public class BeanModelPropertyProvider implements ModelPropertiesProvider {
 
       if (propertyLookup.containsKey(propertyName(childProperty.getName()))) {
         BeanPropertyDefinition propertyDefinition = propertyLookup.get(propertyName(childProperty.getName()));
+        Class<?>[] foundViews = propertyDefinition.findViews();
+        if (null != views && null != foundViews && !isAssignableFromViews(foundViews, views.value())) {
+          continue;
+        }
         Optional<BeanPropertyDefinition> jacksonProperty
                 = jacksonPropertyWithSameInternalName(beanDescription, propertyDefinition);
         try {
@@ -102,6 +111,7 @@ public class BeanModelPropertyProvider implements ModelPropertiesProvider {
 
   @Override
   public void setObjectMapper(ObjectMapper objectMapper) {
+    super.setObjectMapper(objectMapper);
     this.objectMapper = objectMapper;
     this.namingStrategy.setObjectMapper(objectMapper);
   }

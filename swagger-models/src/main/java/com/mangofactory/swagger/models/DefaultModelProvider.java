@@ -9,8 +9,6 @@ import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.model.Model;
 import com.wordnik.swagger.model.ModelProperty;
 import com.wordnik.swagger.model.ModelRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -57,7 +55,7 @@ public class DefaultModelProvider implements ModelProvider {
       Map<String, ModelProperty> properties = newLinkedHashMap();
 
       int index = 0;
-      for (com.mangofactory.swagger.models.ModelProperty each : properties(modelContext, propertiesHost)) {
+      for (com.mangofactory.swagger.models.property.ModelProperty each : properties(modelContext, propertiesHost)) {
           if (each.typeName(modelContext).equals("LocalDateTime")) {
              properties.put(each.getName(), new ModelProperty("string",
                      each.qualifiedTypeName(),
@@ -120,7 +118,7 @@ public class DefaultModelProvider implements ModelProvider {
     return Option.apply("");
   }
 
-  private Iterable<? extends com.mangofactory.swagger.models.ModelProperty> properties(ModelContext context,
+  private Iterable<? extends com.mangofactory.swagger.models.property.ModelProperty> properties(ModelContext context,
                                                                                        ResolvedType propertiesHost) {
     if (context.isReturnType()) {
         return propertiesProvider.propertiesForSerialization(propertiesHost, context.getViews());

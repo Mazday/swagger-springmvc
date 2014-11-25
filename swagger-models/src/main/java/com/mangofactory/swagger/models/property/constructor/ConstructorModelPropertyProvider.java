@@ -5,14 +5,13 @@ import com.mangofactory.swagger.models.BeanPropertyNamingStrategy;
 import com.mangofactory.swagger.models.alternates.AlternateTypeProvider;
 import com.mangofactory.swagger.models.property.field.FieldModelPropertyProvider;
 import com.mangofactory.swagger.models.property.field.FieldProvider;
-import com.mangofactory.swagger.models.property.provider.ModelPropertiesProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Constructor;
 
 @Component
-public class ConstructorModelPropertyProvider extends FieldModelPropertyProvider implements ModelPropertiesProvider {
+public class ConstructorModelPropertyProvider extends FieldModelPropertyProvider {
 
   @Autowired
   public ConstructorModelPropertyProvider(FieldProvider fieldProvider, AlternateTypeProvider alternateTypeProvider,

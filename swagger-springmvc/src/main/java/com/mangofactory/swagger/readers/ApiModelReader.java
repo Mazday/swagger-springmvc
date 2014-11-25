@@ -107,18 +107,19 @@ public class ApiModelReader implements Command<RequestMappingContext> {
         Map<String, ModelProperty> mergedTargetProperties = Maps.newHashMap(targetProperties);
         for (String newProperty : newSourcePropKeys) {
           mergedTargetProperties.put(newProperty, sourceProperties.get(newProperty));
-        // uses scala generated copy constructor.
-        Model mergedModel = targetModelValue.copy(
-                targetModelValue.id(),
-                targetModelValue.name(),
-                targetModelValue.qualifiedType(),
-                ScalaConverters.toScalaLinkedHashMap(mergedTargetProperties),
-                targetModelValue.description(),
-                targetModelValue.baseModel(),
-                targetModelValue.discriminator(),
-                targetModelValue.subTypes());
+          // uses scala generated copy constructor.
+          Model mergedModel = targetModelValue.copy(
+                  targetModelValue.id(),
+                  targetModelValue.name(),
+                  targetModelValue.qualifiedType(),
+                  ScalaConverters.toScalaLinkedHashMap(mergedTargetProperties),
+                  targetModelValue.description(),
+                  targetModelValue.baseModel(),
+                  targetModelValue.discriminator(),
+                  targetModelValue.subTypes());
 
-        target.put(sourceModelKey, mergedModel);
+          target.put(sourceModelKey, mergedModel);
+        }
       }
     }
   }

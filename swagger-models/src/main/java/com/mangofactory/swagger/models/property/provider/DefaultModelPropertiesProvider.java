@@ -1,6 +1,7 @@
 package com.mangofactory.swagger.models.property.provider;
 
 import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.mangofactory.swagger.models.property.ModelProperty;
@@ -27,17 +28,17 @@ public class DefaultModelPropertiesProvider implements ModelPropertiesProvider {
   }
 
   @Override
-  public Iterable<? extends ModelProperty> propertiesForSerialization(ResolvedType type) {
-    return Iterables.concat(fieldModelPropertyProvider.propertiesForSerialization(type),
-            beanModelPropertyProvider.propertiesForSerialization(type),
-            constructorModelPropertyProvider.propertiesForSerialization(type));
+  public Iterable<? extends ModelProperty> propertiesForSerialization(ResolvedType type, JsonView views) {
+    return Iterables.concat(fieldModelPropertyProvider.propertiesForSerialization(type, views),
+            beanModelPropertyProvider.propertiesForSerialization(type, views),
+            constructorModelPropertyProvider.propertiesForSerialization(type, views));
   }
 
   @Override
-  public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType type) {
-    return Iterables.concat(fieldModelPropertyProvider.propertiesForDeserialization(type),
-            beanModelPropertyProvider.propertiesForDeserialization(type),
-            constructorModelPropertyProvider.propertiesForDeserialization(type));
+  public Iterable<? extends ModelProperty> propertiesForDeserialization(ResolvedType type, JsonView views) {
+    return Iterables.concat(fieldModelPropertyProvider.propertiesForDeserialization(type, views),
+            beanModelPropertyProvider.propertiesForDeserialization(type, views),
+            constructorModelPropertyProvider.propertiesForDeserialization(type, views));
   }
 
   @Override
